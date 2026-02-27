@@ -11,3 +11,5 @@ npx hardhat test
 npx hardhat node
 npx hardhat node && npx hardhat ignition deploy ./ignition/modules/MyToken.js --network localhost
 ```
+
+cargo build -p pallet-revive -p polkadot-parachain-bin -p pallet-revive-eth-rpc --release

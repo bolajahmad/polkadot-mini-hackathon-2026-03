@@ -11,7 +11,7 @@ module.exports = {
             },
             nodeConfig: {
                 nodeBinaryPath: "./bin/polkadot-parachain",
-                rpcPort: 64310,
+                rpcPort: 61315,
                 dev: true,
             },
             adapterConfig: {
