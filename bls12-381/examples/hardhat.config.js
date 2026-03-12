@@ -23,17 +23,16 @@ module.exports = {
             polkadot: {
                 target: "evm",
             },
-            // This is for your ALREADY RUNNING Zombienet + eth-rpc
-    
+            url: `http://127.0.0.1:8545`,
             chainId: 420420421,
-            accounts: [vars.get("LOCAL_PRIVATE_KEY")],        url: "http://127.0.0.1:8545",
+            accounts: [vars.get("LOCAL_PRIVATE_KEY")],
         },
-        // polkadotHubTestnet: {
-        //     polkadot: {
-        //         target: "evm",
-        //     },
-        //     url: "https://testnet-passet-hub-eth-rpc.polkadot.io",
-        //     accounts: [vars.get("PRIVATE_KEY")],
-        // },
+        polkadotHubTestnet: {
+            polkadot: {
+                target: "evm",
+            },
+            url: "https://testnet-passet-hub-eth-rpc.polkadot.io",
+            accounts: [vars.get("PRIVATE_KEY")],
+        },
     },
 }
