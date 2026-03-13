@@ -2,9 +2,6 @@
 pragma solidity ^0.8.28;
 
 import "./modules/BLS.sol";
+import "./modules/Schnorr.sol";
 
-library Precompiles {
-    function blsAggregate(bytes memory input) internal view returns (bytes memory) {
-        return BLS.g1Add(input);
-    }
-}
+import "./constants/Addresses.sol";
