@@ -2,7 +2,7 @@
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "pvm-cli")]
+#[command(name = "pvmcli")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -10,8 +10,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    BlsGenG1,
-    SchnorrSign,
+    g1add,
+    g2add,
+    g1msm {
+        k: usize
+    }
 }
 
 fn main() {
