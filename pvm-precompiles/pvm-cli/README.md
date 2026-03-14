@@ -15,6 +15,139 @@ The binary will be available at `target/release/pvmcli`.
 
 ## Usage
 
+### BLS12-381 Point Operations
+
+#### Generate Random Points
+
+```bash
+# Generate a random G1 point
+pvmcli bls random-g1
+
+# Generate a random G2 point
+pvmcli bls random-g2
+```
+
+Each command prints the point in three forms:
+- full precompile hex encoding
+- JSON shaped like the Solidity struct fields
+- Solidity-friendly struct literal
+
+#### Add G1 Points
+
+```bash
+# Using full hex point encodings
+pvmcli bls g1-add \
+  --point-a 0x<G1_POINT_A_128_BYTES> \
+  --point-b 0x<G1_POINT_B_128_BYTES>
+
+# Using Solidity-shaped JSON
+pvmcli bls g1-add \
+  --point-a '{"x":"0x<X_COORD>","y":"0x<Y_COORD>"}' \
+  --point-b '{"x":"0x<X_COORD>","y":"0x<Y_COORD>"}'
+```
+
+#### Add G2 Points
+
+```bash
+# Using full hex point encodings
+pvmcli bls g2-add \
+  --point-a 0x<G2_POINT_A_256_BYTES> \
+  --point-b 0x<G2_POINT_B_256_BYTES>
+
+# Using Solidity-shaped JSON
+pvmcli bls g2-add \
+  --point-a '{"x":["0x<X0>","0x<X1>"],"y":["0x<Y0>","0x<Y1>"]}' \
+  --point-b '{"x":["0x<X0>","0x<X1>"],"y":["0x<Y0>","0x<Y1>"]}'
+```
+
+The JSON input mirrors the Solidity library layout in [../solidity/contracts/types/BLS.sol](../solidity/contracts/types/BLS.sol).
+
+#### G1/G2 MSM Testdata Generation
+
+```bash
+# Generate deterministic G1 MSM testdata with 3 pairs
+pvmcli bls g1-msm-testdata --pairs 3 --output both
+
+# Generate deterministic G2 MSM testdata with 2 pairs
+pvmcli bls g2-msm-testdata --pairs 2 --output json
+```
+
+This returns MSM payloads in:
+- full precompile hex encoding
+- Solidity-shaped JSON (`points` + `scalars`)
+
+#### G1/G2 MSM Execution
+
+```bash
+# Execute G1 MSM with hex-encoded input (k * 160 bytes)
+pvmcli bls g1-msm --data 0x<MSM_INPUT_HEX>
+
+# Execute G2 MSM with Solidity-shaped JSON
+pvmcli bls g2-msm --data '{"points":[...],"scalars":["0x...","123"]}'
+```
+
+#### G1/G2 MSM Validation
+
+```bash
+# Validate G1 MSM payload before computation
+pvmcli bls g1-msm-validate --data 0x<MSM_INPUT_HEX>
+
+# Validate G2 MSM payload before computation
+pvmcli bls g2-msm-validate --data '{"points":[...],"scalars":[...]}'
+```
+
+Invalid payloads are rejected with a descriptive error and non-zero exit code.
+
+#### Map Fp -> G1 and Fp2 -> G2
+
+```bash
+# Random Fp input if --fp is omitted
+pvmcli bls map-fp-to-g1
+
+# Explicit Fp input (32 or 64-byte hex, or JSON)
+pvmcli bls map-fp-to-g1 --fp 0x<FP_HEX>
+pvmcli bls map-fp-to-g1 --fp '{"value":"0x<FP_HEX>"}'
+
+# Random Fp2 input if --fp2 is omitted
+pvmcli bls map-fp2-to-g2
+
+# Explicit Fp2 input (128-byte hex, or JSON)
+pvmcli bls map-fp2-to-g2 --fp2 0x<FP2_HEX>
+pvmcli bls map-fp2-to-g2 --fp2 '{"value":["0x<C0>","0x<C1>"]}'
+```
+
+#### BLS Signature Generation and Verification
+
+```bash
+# Sign one message with a secret key
+pvmcli bls sign --secret-key 42 --message "hello"
+
+# Verify one signature using pairing logic
+pvmcli bls verify \
+  --signature '{"x":"0x<...>","y":"0x<...>"}' \
+  --pubkey '{"x":["0x<...>","0x<...>"],"y":["0x<...>","0x<...>"]}' \
+  --message "hello"
+```
+
+#### Batch Signature Workflows
+
+```bash
+# Generate deterministic batch-signature test data
+pvmcli bls batch-sign-testdata --count 4 --output both
+
+# Aggregate multiple signatures (hex or JSON payload)
+pvmcli bls batch-aggregate --signatures '{"signatures":[...G1 points...]}'
+
+# Verify batch signatures with optional aggregated signature check
+pvmcli bls batch-verify --data '{"messages":[...],"signatures":[...],"pubkeys":[...],"aggregated_signature":{...}}'
+
+# End-to-end smoke flow (generate -> aggregate -> verify)
+pvmcli bls batch-smoke --count 4 --output summary
+pvmcli bls batch-smoke --count 4 --output json
+```
+
+`batch-verify` checks each signature against its message/public key using pairing logic and also checks aggregate consistency when an `aggregated_signature` is provided.
+
 ### Schnorr Signature Operations
 
 #### Generate a Signature
@@ -129,9 +262,8 @@ SchnorrSignature memory sig = SchnorrSignature({
 });
 ```
 
-## Planned Features
+## Notes
 
-- BLS12-381 operations (G1/G2 point generation, MSM, pairing)
-- Direct contract interaction
-- Batch test vector generation
-- Automated integration testing
+- Invalid BLS/Schnorr payloads return a descriptive error and a non-zero exit code.
+- Most BLS commands support either full precompile hex input or Solidity-shaped JSON input.
+- `batch-smoke` is the fastest end-to-end local correctness check for batch signature flows.

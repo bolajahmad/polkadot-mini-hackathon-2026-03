@@ -4054,10 +4054,14 @@ name = "pvmcli"
 version = "0.1.0"
 dependencies = [
  "alloy-primitives",
+ "ark-bls12-381 0.4.0",
+ "bls12-381",
  "clap",
  "hex",
  "rand 0.8.5",
  "schnorr",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

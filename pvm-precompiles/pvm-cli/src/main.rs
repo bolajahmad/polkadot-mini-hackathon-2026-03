@@ -16,6 +16,14 @@
 //! pvmcli schnorr sign -s <SECRET_KEY> -m "message"
 //! pvmcli schnorr verify -p <PUBKEY> -n <NONCE> -s <SIG> -m "message"
 //! pvmcli schnorr test-data --secret-key <SECRET_KEY> --nonce <NONCE_SEED>
+//! pvmcli bls random-g1
+//! pvmcli bls g2-add --point-a <POINT> --point-b <POINT>
+//! pvmcli bls g1-msm-testdata --pairs 3 --output both
+//! pvmcli bls g2-msm --data <MSM_DATA>
+//! pvmcli bls map-fp-to-g1 --fp <FP_INPUT>
+//! pvmcli bls sign --secret-key <SK> --message "hello"
+//! pvmcli bls batch-sign-testdata --count 4 --output both
+//! pvmcli bls batch-smoke --count 4 --output summary
 //! ```
 
 use clap::{Parser, Subcommand};
@@ -23,7 +31,7 @@ use clap::{Parser, Subcommand};
 mod commands;
 mod utils;
 
-use commands::schnorr::SchnorrCommands;
+use commands::{bls::BlsCommands, schnorr::SchnorrCommands};
 
 /// PVM Precompiles CLI - Developer utility for cryptographic precompiles.
 #[derive(Parser)]
@@ -39,26 +47,24 @@ struct Cli {
 /// Top-level commands organized by cryptographic primitive.
 #[derive(Subcommand)]
 enum Commands {
+    /// BLS12-381 point generation and addition utilities
+    Bls {
+        #[command(subcommand)]
+        action: BlsCommands,
+    },
+
     /// Schnorr signature operations (sign, verify, test-data)
     Schnorr {
         #[command(subcommand)]
         action: SchnorrCommands,
     },
-
-    // Future commands:
-    // /// BLS12-381 elliptic curve operations
-    // Bls {
-    //     #[command(subcommand)]
-    //     action: BLSCommands,
-    // },
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Bls { action } => commands::bls::handle(action),
         Commands::Schnorr { action } => commands::schnorr::handle(action),
-        // Future:
-        // Commands::Bls { action } => commands::bls::handle(action),
     }
 }
